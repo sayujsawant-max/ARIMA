@@ -19,7 +19,7 @@ st.caption("Interactive Box-Jenkins case study. Simulated data by default; "
 # ---------------------------------------------------------------- sidebar
 with st.sidebar:
     st.header("Data")
-    src = st.radio("Source", ["Simulated (report setup)", "Upload CSV"])
+    src = st.radio("Source", ["Simulated (report setup)", "Demo CSV", "Upload CSV"])
     if src.startswith("Sim"):
         n = st.slider("Observations", 600, 3000, 1500, 100)
         seed = st.number_input("Seed", 0, 10_000, 42)
@@ -28,13 +28,16 @@ with st.sidebar:
         price = simulate_prices(n, int(seed), phi=phi, mu=mu)
     else:
         demo_path = Path(__file__).parent / "data" / "demo_prices.csv"
-        st.download_button("Download demo CSV", demo_path.read_bytes(), "demo_prices.csv", "text/csv")
-        use_demo = st.checkbox("Use the demo CSV (1,500 simulated days, Date + Close)", value=True)
-        up = demo_path if use_demo else st.file_uploader(
-            "CSV with a date column and a Close/price column", type="csv")
-        if up is None:
-            st.info("Upload a CSV to continue.")
-            st.stop()
+        if src.startswith("Demo"):
+            up = demo_path
+            st.download_button("Download demo CSV", demo_path.read_bytes(),
+                               "demo_prices.csv", "text/csv")
+        else:
+            up = st.file_uploader("CSV with a date column and a Close/price column", type="csv")
+            st.caption("Need a template? Pick 'Demo CSV' and download it.")
+            if up is None:
+                st.info("Upload a CSV to continue.")
+                st.stop()
         try:
             price = load_csv(up)
         except Exception as e:

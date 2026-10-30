@@ -1,4 +1,6 @@
 """Streamlit app: interactive Box-Jenkins ARIMA case study."""
+from pathlib import Path
+
 import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
@@ -25,7 +27,11 @@ with st.sidebar:
         mu = st.slider("Daily drift (%)", 0.0, 0.15, 0.04, 0.01) / 100
         price = simulate_prices(n, int(seed), phi=phi, mu=mu)
     else:
-        up = st.file_uploader("CSV with a date column and a Close/price column", type="csv")
+        demo_path = Path(__file__).parent / "data" / "demo_prices.csv"
+        st.download_button("Download demo CSV", demo_path.read_bytes(), "demo_prices.csv", "text/csv")
+        use_demo = st.checkbox("Use the demo CSV (1,500 simulated days, Date + Close)", value=True)
+        up = demo_path if use_demo else st.file_uploader(
+            "CSV with a date column and a Close/price column", type="csv")
         if up is None:
             st.info("Upload a CSV to continue.")
             st.stop()
